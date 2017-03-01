@@ -13,6 +13,9 @@ and omits many desirable features.
 # Standard library
 import random
 
+# Plotting library 
+import matplotlib.pyplot as plt
+
 # Third-party libraries
 import numpy as np
 
@@ -42,7 +45,7 @@ class Network(object):
         return a
 
     def SGD(self, training_data, epochs, mini_batch_size, eta,
-            test_data=None):
+            test_data=None, validation_data=None, training_data_plot=None):
         """Train the neural network using mini-batch stochastic
         gradient descent.  The ``training_data`` is a list of tuples
         ``(x, y)`` representing the training inputs and the desired
@@ -53,6 +56,16 @@ class Network(object):
         tracking progress, but slows things down substantially."""
         if test_data: n_test = len(test_data)
         n = len(training_data)
+
+        if training_data_plot: n_training = len(training_data_plot)
+
+        if validation_data: n_validation = len(validation_data)
+
+        epoch_holder = []
+        accuracy_testing_data = []
+        accuracy_training_data = []
+        accuracy_validation_data = []
+
         for j in xrange(epochs):
             random.shuffle(training_data)
             mini_batches = [
@@ -63,8 +76,23 @@ class Network(object):
             if test_data:
                 print "Epoch {0}: {1} / {2}".format(
                     j, self.evaluate(test_data), n_test)
+                epoch_holder.append(j)
+                accuracy_testing_data.append(self.evaluate(test_data) * 100.0 / n_test)
+                accuracy_training_data.append(self.evaluate(training_data_plot) * 100.0 / n_training)
+                accuracy_validation_data.append(self.evaluate(validation_data) * 100.0 / n_validation)
             else:
                 print "Epoch {0} complete".format(j)
+
+        plt.plot(epoch_holder, accuracy_testing_data, label = 'Testing accuracy')
+        plt.plot(epoch_holder, accuracy_training_data, label = 'Training accuracy')
+        plt.plot(epoch_holder, accuracy_validation_data, label = 'Validation accuracy')
+        plt.title('Accuracy Plots \n')
+        plt.xlabel('Number of epochs')
+        plt.ylabel('Accuracy of the neural network')
+        plt.ylim(ymin = 0, ymax = 120)
+        plt.legend()
+        plt.show()
+
 
     def update_mini_batch(self, mini_batch, eta):
         """Update the network's weights and biases by applying
